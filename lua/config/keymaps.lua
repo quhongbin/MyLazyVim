@@ -6,4 +6,4 @@ local map = LazyVim.safe_keymap_set
 map("i", "jk", "<Esc>")
 map("v", "jk", "<Esc>")
 map("n", "<leader>qa", "<Cmd>wqall<CR>", { desc = "write and quit all files" })
-vim.keymap.set("n", "<C-m>", ":w")
+-- vim.keymap.set("n", "<C-m>", ":w")
