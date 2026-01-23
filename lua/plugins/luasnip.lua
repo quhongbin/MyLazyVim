@@ -27,12 +27,12 @@ return {
       },
     },
   },
-  config = function(_, opts)
-    -- 应用基础配置
-    require("luasnip").setup(opts)
+  -- config = function(_, opts)
+  -- 应用基础配置
+  -- require("luasnip").setup(opts)
 
-    -- 方式2：从外部文件加载片段（适合大量片段，后续扩展用）
-    -- 比如新建 ~/.config/nvim/lua/snippets/ 目录，按文件类型存放片段
-    require("luasnip.loaders.from_lua").lazy_load({ paths = "~/.config/nvim/lua/snippets/" })
-  end,
+  -- 方式2：从外部文件加载片段（适合大量片段，后续扩展用）
+  -- 比如新建 ~/.config/nvim/lua/snippets/ 目录，按文件类型存放片段
+  -- require("luasnip.loaders.from_vscode").lazy_load({ paths = "~/.config/nvim/snippets/*.json" })
+  -- end,
 }
