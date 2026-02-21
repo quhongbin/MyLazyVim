@@ -1,53 +1,87 @@
 return {
   {
-    vim.api.nvim_create_user_command("Run", function(lang)
-      vim.notify(vim.bo.filetype, vim.log.levels.INFO)
-      vim.notify(lang, vim.log.levels.INFO)
-      -- get the filetype
-      if vim.bo.filetype == lang then
-        vim.notify("test", vim.log.levels.INFO)
+    -- 定义一个编译并运行 C++ 的函数
+    -- 定义 Cpp 命令，支持 run/build/test 子命令
+    vim.api.nvim_create_user_command("Cpp", function(opts)
+      -- 1. 解析参数
+      -- opts.fargs 是一个列表，包含命令后面的单词
+      -- 例如输入 ":Cpp run"，fargs[1] 就是 "run"
+      local subcmd = opts.fargs[1] or "run" -- 默认行为设为 run
+      local custom_name = opts.fargs[2] -- 第二个参数：自定义输出文件名（可选）
+
+      -- 2. 获取文件信息
+      local file_path = vim.fn.expand("%:p") -- 当前文件绝对路径
+      local file_base = vim.fn.expand("%:t:r") -- 无后缀文件名
+      local output_name = custom_name or file_base
+
+      -- Windows 兼容性处理
+      if vim.fn.has("win32") == 1 then
+        output_name = output_name .. ".exe"
       end
+
+      -- 3. 定义基础编译器设置
+      local compiler = "g++"
+      local std_flag = "-std=c++17" -- 指定 C++ 标准
+      local common_flags = "-Wall -g" -- 常用警告和调试信息
+
+      -- 4. 根据子命令构建具体的 Shell 命令
+      local cmd = ""
+
+      if subcmd == "build" then
+        -- build: 仅编译
+        cmd = string.format(
+          "%s %s %s %s -o %s",
+          compiler,
+          std_flag,
+          common_flags,
+          vim.fn.shellescape(file_path),
+          output_name
+        )
+        print("Building " .. file_base .. "...")
+      elseif subcmd == "run" then
+        -- run: 编译并运行
+        cmd = string.format(
+          "%s %s %s %s -o %s && ./%s || %s",
+          compiler,
+          std_flag,
+          common_flags,
+          vim.fn.shellescape(file_path),
+          output_name,
+          output_name,
+          output_name
+        )
+      elseif subcmd == "test" then
+        -- test: 编译并运行 (这里示例添加了 AddressSanitizer 检测内存错误)
+        -- 如果不想用 sanitizer，可以改为和 run 一样
+        local test_flags = "-fsanitize=address -fsanitize=undefined"
+        cmd = string.format(
+          "%s %s %s %s %s -o %s && ./%s || %s",
+          compiler,
+          std_flag,
+          common_flags,
+          test_flags,
+          vim.fn.shellescape(file_path),
+          output_name,
+          output_name,
+          output_name
+        )
+        print("Testing with Sanitizers...")
+      else
+        print("Unknown Cpp subcommand: " .. subcmd)
+        return
+      end
+
+      -- 5. 在终端中执行
+      -- vsplit: 垂直分割窗口
+      -- terminal: 打开终端
+      vim.cmd("split | terminal " .. cmd)
+      vim.cmd("startinsert") -- 自动进入插入模式
     end, {
-      desc = "print hello Wolrd",
-      nargs = "?",
-      complete = function()
-        return { "qhb", "qhb1" }
+      nargs = "*", -- 接受任意数量的参数
+      complete = function() -- Tab 补全函数
+        return { "run", "build", "test" }
       end,
-    }),
-    -- 功能二
-    vim.api.nvim_create_user_command("Test", function()
-      vim.cmd("w") -- 保存文件
-      local file = vim.fn.expand("%") -- 当前文件路径
-
-      -- 异步执行 python 脚本
-      vim.system({ "python3", file }, { text = true }, function(res)
-        -- 关键：用 vim.schedule 包裹 UI 操作，避开 Fast Event Context
-        vim.schedule(function()
-          -- 1. 创建浮动窗口（现在在非 Fast 上下文，允许执行）
-          local buf = vim.api.nvim_create_buf(false, true) -- 创建临时缓冲区
-          local win = vim.api.nvim_open_win(buf, true, {
-            relative = "editor",
-            width = vim.o.columns - 20,
-            height = vim.o.lines - 10,
-            row = 5,
-            col = 10,
-          })
-
-          -- 2. 将输出写入缓冲区
-          local output = res.stdout or res.stderr -- 取标准输出/错误输出
-          vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(output, "\n"))
-
-          -- 3. 窗口失去焦点时自动关闭（可选）
-          vim.api.nvim_create_autocmd("WinLeave", {
-            buffer = buf,
-            callback = function()
-              vim.api.nvim_win_close(win, true)
-            end,
-          })
-        end)
-      end)
-    end, {
-      desc = "Async run Python file (float window)",
+      desc = "C++ Tools: run, build, test",
     }),
   },
 }
