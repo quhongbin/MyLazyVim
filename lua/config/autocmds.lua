@@ -29,7 +29,6 @@ local filetype_configs = {
   end,
   ["markdown"] = function()
     vim.wo.wrap = true
-    vim.bo.spell = true -- 启用拼写检查（仅当前 Markdown 文件）
     -- vim.bo.spelllang = "en_us" -- 拼写检查语言（仅当前文件）
     vim.cmd("w")
   end,
@@ -50,9 +49,10 @@ for ft_pattern, config_func in pairs(filetype_configs) do
 end
 
 -- md file off spelling
-vim.api.nvim_create_autocmd("BufReadPre", {
-  pattern = { "*.markdown,*.md" },
+vim.api.nvim_create_autocmd("BufReadPost", {
+  pattern = { "*.md" },
   callback = function()
+    vim.bo.spelllang = "en_us" -- 拼写检查语言（仅当前文件）
     vim.opt.spell = false
   end,
   once = false,
