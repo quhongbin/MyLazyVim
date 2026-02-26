@@ -24,8 +24,7 @@
 |打印输出|`vim.print(...)`|更友好的打印（支持表、多参数，替代 `print`）|`vim.print({name = "neovim", version = "0.9"})`|
 |执行 Vim 命令|`vim.cmd(cmd)`|执行 Vimscript 命令（字符串/表格式）|`vim.cmd("w") -- 保存文件<br>vim.cmd({ "split", "test.lua" }) -- 分屏打开文件`|
 |表合并|`vim.tbl_deep_extend(how, ...)`|深度合并多个表（how："error"/"keep"/"force"）|`local t1 = {a=1}; local t2={b=2}; vim.tbl_deep_extend("force", t1, t2)`|
-|表遍历|`vim.tbl_map(fn, tbl)`|对表中每个元素执行函数并返回新表|`vim.tbl_map(function(v) return v*2 end, {1,2,3}) -- 输出 {2,4,6}`|
-|表过滤|`vim.tbl_filter(fn, tbl)`|过滤表中符合条件的元素|`vim.tbl_filter(function(v) return v>2 end, {1,2,3}) -- 输出 {3}`|
+|表遍历|`vim.tbl_map(fn, tbl)`|对表中每个元素执行函数并返回新表|`vim.tbl_map(function(v) return v*2 end, {1,2,3}) -- 输出 {2,4,6}`| |表过滤|`vim.tbl_filter(fn, tbl)`|过滤表中符合条件的元素|`vim.tbl_filter(function(v) return v>2 end, {1,2,3}) -- 输出 {3}`|
 |延时执行|`vim.defer_fn(fn, timeout)`|延迟 `timeout` 毫秒执行函数|`vim.defer_fn(function() vim.notify("延时提示") end, 1000)`|
 |字符串分割|`vim.split(s, sep, opts?)`|按分隔符分割字符串为表|`vim.split("a,b,c", ",") -- 输出 {"a","b","c"}`|
 |字符串拼接|`vim.fn.join(tbl, sep?)`|将表拼接为字符串（Vimscript 兼容）|`vim.fn.join({"a","b"}, "-") -- 输出 "a-b"`|
