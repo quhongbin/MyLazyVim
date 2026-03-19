@@ -8,45 +8,50 @@
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
 -- resize splits if window got resized
--- 定义文件类型配置表
-local filetype_configs = {
+-- 定义文件类型配置表（仅设置选项，不包含保存）
+local filetype_options = {
   python = function()
     vim.bo.expandtab = true
     vim.bo.shiftwidth = 4
-    -- 保存时去行尾空格
-    vim.api.nvim_create_autocmd("BufWritePre", {
-      buffer = 0,
-      callback = function()
-        vim.cmd("%s/\\s\\+$//e")
-      end,
-    })
-    vim.cmd("w")
   end,
-  lua = function()
+  ["*.lua"] = function()
     vim.bo.shiftwidth = 2
     vim.wo.wrap = false
-    vim.cmd("w")
   end,
-  ["markdown"] = function()
-    vim.wo.wrap = true
-    -- vim.bo.spelllang = "en_us" -- 拼写检查语言（仅当前文件）
-    vim.cmd("w")
-  end,
-  ["c,cpp,java,go"] = function() -- 批量匹配用逗号分隔
+  ["*.c,*.cpp,*.h,*.java,*.go"] = function()
     vim.bo.shiftwidth = 4
     vim.bo.cindent = true
-    vim.cmd("w")
   end,
 }
 
--- 批量创建 autocmd
-for ft_pattern, config_func in pairs(filetype_configs) do
-  vim.api.nvim_create_autocmd("InsertLeave", {
-    pattern = vim.split(ft_pattern, ","), -- 分割逗号为列表
+-- 在 FileType 事件时设置文件类型选项
+for ft_pattern, config_func in pairs(filetype_options) do
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = vim.split(ft_pattern, ","),
     callback = config_func,
-    desc = "Filetype config for: " .. ft_pattern,
+    desc = "Filetype options for: " .. ft_pattern,
   })
 end
+
+-- 保存文件的 autocmd（离开 buffer 或退出 Insert 模式时保存）
+local filetype_save = {
+  python = function()
+    vim.cmd("%s/\\s\\+$//e")
+  end,
+}
+vim.api.nvim_create_autocmd({ "InsertLeave", "BufLeave" }, {
+  pattern = { "*.py", "*.lua", "*.c", "*.cpp", "*.h", "*.java", "*.go" },
+  callback = function(args)
+    local ft = vim.bo[args.buf].filetype
+    if filetype_save[ft] then
+      filetype_save[ft]()
+    end
+    if vim.bo[args.buf].modified then
+      vim.cmd("w")
+    end
+  end,
+  desc = "Save file on InsertLeave or BufLeave",
+})
 
 -- md file off spelling
 vim.api.nvim_create_autocmd("BufReadPost", {
