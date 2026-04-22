@@ -5,6 +5,7 @@
     "lazyvim.plugins.extras.coding.luasnip",
     "lazyvim.plugins.extras.coding.mini-surround",
     "lazyvim.plugins.extras.lang.clangd",
+    "lazyvim.plugins.extras.lang.cmake",
     "lazyvim.plugins.extras.lang.dart",
     "lazyvim.plugins.extras.lang.typst",
     "lazyvim.plugins.extras.lang.zig",
