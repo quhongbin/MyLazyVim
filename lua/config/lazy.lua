@@ -20,6 +20,8 @@ require("lazy").setup({
     hererocks = true,
   },
   spec = {
+    -- image.nvim
+    {"3rd/image.nvim",opts={}},
     -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
     -- import/override with your plugins
